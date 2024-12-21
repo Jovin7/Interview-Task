@@ -1,6 +1,8 @@
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
 public class MainMenuManager : MonoBehaviour
 {
 
@@ -27,23 +29,32 @@ public class MainMenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+       StartScreen.transform.GetChild(0).DOScale(1.2f, 0.5f).SetEase(Ease.InOutBack).SetLoops(-1, LoopType.Yoyo);
+       StartScreen.transform.GetChild(1).GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 200), 1f).SetEase(Ease.InBack);
+    }
+   
+
+   
+
+    public void OnStartScreenStartButtonClick()
+    {
+        
+        LevelSelectionScreen.gameObject.SetActive(true);
+        StartScreen.gameObject.SetActive(false);
+        InitializeRowOptions();
+
+    }
+    private void InitializeRowOptions()
+    {
         rowDropDown.options.Clear();
         for (int i = 1; i <= gameplayManager.CardGraphics.Count; i++)
         {
             rowDropDown.options.Add(new TMP_Dropdown.OptionData(i.ToString()));
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void OnStartScreenStartButtonClick()
-    {
-       LevelSelectionScreen.gameObject.SetActive(true);
-        StartScreen.gameObject.SetActive(false);
+        
+        columnDropDown.options.Clear();
+        columnDropDown.options.Add(new TMP_Dropdown.OptionData("1"));
+        columnDropDown.interactable = false;
     }
 
     public void OnRowDropDown()
@@ -79,7 +90,10 @@ public class MainMenuManager : MonoBehaviour
         LevelSelectionScreen.gameObject.SetActive(false);
         GamePanel.gameObject.SetActive(true);
         gameplayManager.enabled = true;
-        // need to enable Score , Timer
+
+
+
+        
     }
 
     public void GameOver()
@@ -91,7 +105,11 @@ public class MainMenuManager : MonoBehaviour
 
     public void GameOverMenuButtonClick()
     {
-        LevelSelectionScreen.gameObject.SetActive(true);
-        GameOverScreen.gameObject.SetActive(false); 
+        StartScreen.gameObject.SetActive(true);
+        GameOverScreen.gameObject.SetActive(false);
+        gameplayManager.enabled = false;
+        gameplayManager.ResetGameplayUi();
+        gameplayManager.ResetData();
+
     }
 }

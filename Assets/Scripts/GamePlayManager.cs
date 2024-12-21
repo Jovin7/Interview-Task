@@ -25,7 +25,7 @@ public class GamePlayManager : MonoBehaviour
     public int totalCount;
     public int totalMatchCount;
 
-    private Card[,] cardMatrixArray;
+   [SerializeField] private Card[,] cardMatrixArray;
     public List<CardData> cardDatas;
 
     private void Awake()
@@ -35,6 +35,11 @@ public class GamePlayManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+       
+    }
+    private void OnEnable()
+    {
+        //ResetData();
         totalCount = rowCount * columnCount;
         totalMatchCount = totalCount;
 
@@ -156,6 +161,7 @@ public class GamePlayManager : MonoBehaviour
             currentlySelectedCard = cardDetail;
             if (currentlySelectedCard.spriteIndex == previouslySelectedCard.spriteIndex)
             {
+                //AudioPlayer.Instance.PlayAudio(2);
                 previouslySelectedCard.GetComponent<Image>().enabled = false;
                 currentlySelectedCard.GetComponent<Image>().enabled = false;
                 totalMatchCount -= 2;
@@ -165,6 +171,7 @@ public class GamePlayManager : MonoBehaviour
                 if (totalMatchCount > 0)
                 {
                     Debug.Log("continue GamePlay");
+                    
                 }
                 else
                 {
@@ -188,6 +195,37 @@ public class GamePlayManager : MonoBehaviour
     }
 
 
+    public void ResetData()
+    {
+        Debug.LogError("Reset");
+        cardDatas = null;
+        if (cardMatrixArray != null)
+        {
+            for (int i = 0; i < cardMatrixArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < cardMatrixArray.GetLength(1); j++)
+                {
+
+                    Destroy(cardMatrixArray[i, j].gameObject);
+                   
+                }
+            }
+        }
+        cardMatrixArray = null;
+        
+
+
+    }
+    public void ResetGameplayUi()
+    {
+        totalCount = 0;
+        totalMatchCount = 0;
+        currentScore = 0;
+        comboMultiplier = 1;
+        totalTime = 120;
+        timerText.text = "00:00";
+        scoreText.text = "0";
+    }
 }
 
 [Serializable]

@@ -54,8 +54,8 @@ public class Card : MonoBehaviour
 
     public void OnSelect()
     {
+        AudioPlayer.Instance.PlayAudio(1);
         CardFlip();
-
 
 
     }
