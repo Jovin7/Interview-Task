@@ -1317,6 +1317,7 @@ MonoBehaviour:
   LevelSelectionScreen: {fileID: 995490636214557867}
   GamePanel: {fileID: 1945089979}
   GameOverScreen: {fileID: 485371465}
+  finalScore: {fileID: 2059439133}
   rowDropDown: {fileID: 995490636185943619}
   columnDropDown: {fileID: 995490637727803995}
 --- !u!1 &587137212
@@ -1351,6 +1352,8 @@ MonoBehaviour:
   cardPrefab: {fileID: 435901134062930904, guid: f023ea4b5c330bd4caf2286175f61da7, type: 3}
   cardGrid: {fileID: 412908902}
   cardGridRect: {fileID: 412908899}
+  timerText: {fileID: 202660305}
+  scoreText: {fileID: 1908146807}
   CardGraphics:
   - {fileID: 21300000, guid: 3fe7b342416e260439e073d076a67005, type: 3}
   - {fileID: 21300000, guid: a9294994edbeb164483d9ccd27b1b02d, type: 3}
@@ -1364,8 +1367,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 327091c2171ce854f954c656732a47ab, type: 3}
   previouslySelectedCard: {fileID: 0}
   currentlySelectedCard: {fileID: 0}
-  rowCount: 0
-  columnCount: 0
+  rowCount: 2
+  columnCount: 2
   totalCount: 0
   totalMatchCount: 0
   cardDatas: []
@@ -1844,9 +1847,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 543398257}
         m_TargetAssemblyTypeName: MainMenuManager, Assembly-CSharp
-        m_MethodName: GameStart
+        m_MethodName: GameOverMenuButtonClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2450,7 +2453,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 100
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d720c6aab7b81104e8fe2e4568d0db4a, type: 2}
   m_sharedMaterial: {fileID: -8908603784150383658, guid: d720c6aab7b81104e8fe2e4568d0db4a, type: 2}
@@ -2544,7 +2547,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1945089979
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5025,8 +5028,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 1
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d720c6aab7b81104e8fe2e4568d0db4a, type: 2}
+  m_sharedMaterial: {fileID: -8908603784150383658, guid: d720c6aab7b81104e8fe2e4568d0db4a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5441,7 +5444,19 @@ MonoBehaviour:
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 543398257}
+        m_TargetAssemblyTypeName: MainMenuManager, Assembly-CSharp
+        m_MethodName: OnColumnDropDown
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!114 &995490637740323936
 MonoBehaviour:

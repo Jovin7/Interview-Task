@@ -12,6 +12,10 @@ public class MainMenuManager : MonoBehaviour
     public Transform LevelSelectionScreen;
     public Transform GamePanel;
     public Transform GameOverScreen;
+    public TextMeshProUGUI finalScore;
+
+    
+   
 
     public TMP_Dropdown rowDropDown;
     public TMP_Dropdown columnDropDown;
@@ -57,11 +61,19 @@ public class MainMenuManager : MonoBehaviour
         columnDropDown.value = 0;
         columnDropDown.captionText.text = columnDropDown.options[0].text;
     }
-
+    public void OnColumnDropDown()
+    {
+        string selectedColumnValue = columnDropDown.options[columnDropDown.value].text;
+        Debug.Log(selectedColumnValue);
+    }
 
     public void GameStart()
     {
-        gameplayManager.columnCount = columnDropDown.value + 1;
+        string selectedColumnValue = columnDropDown.options[columnDropDown.value].text;
+
+        // Assuming you want to use the selected value (convert it to integer if needed)
+        int columnCount = int.Parse(selectedColumnValue);
+        gameplayManager.columnCount = columnCount;
 
 
         LevelSelectionScreen.gameObject.SetActive(false);
@@ -74,5 +86,12 @@ public class MainMenuManager : MonoBehaviour
     {
         GamePanel.gameObject.SetActive(false);
         GameOverScreen.gameObject.SetActive(true);
+        finalScore.text = gameplayManager.scoreText.text;
+    }
+
+    public void GameOverMenuButtonClick()
+    {
+        LevelSelectionScreen.gameObject.SetActive(true);
+        GameOverScreen.gameObject.SetActive(false); 
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 public class GamePlayManager : MonoBehaviour
@@ -8,16 +9,25 @@ public class GamePlayManager : MonoBehaviour
     public GameObject cardPrefab;
     public GridLayoutGroup cardGrid;
     public RectTransform cardGridRect;
+
+    private float totalTime = 120f;
+    public TextMeshProUGUI timerText;
+    public TextMeshProUGUI scoreText;
+    private int standardScore = 10;
+    private int comboMultiplier = 1;
+    private int currentScore = 0;
+
     public List<Sprite> CardGraphics = new List<Sprite>();
     public Card previouslySelectedCard;
     public Card currentlySelectedCard;
-    public int rowCount;
-    public int columnCount;
+    public int rowCount = 2;
+    public int columnCount = 2;
     public int totalCount;
     public int totalMatchCount;
 
     private Card[,] cardMatrixArray;
     public List<CardData> cardDatas;
+
     private void Awake()
     {
         instance = this;
@@ -29,10 +39,26 @@ public class GamePlayManager : MonoBehaviour
         totalMatchCount = totalCount;
 
         SetupGame();
-
-
-
     }
+    private void Update()
+    {
+        if (totalTime > 0)
+        {
+
+            totalTime -= Time.deltaTime;
+            int minutes = Mathf.FloorToInt(totalTime / 60);
+            int seconds = Mathf.FloorToInt(totalTime % 60);
+
+            // Format the time as "00:00"
+            string timeFormatted = string.Format("{0:D2}:{1:D2}", minutes, seconds);
+            timerText.text = timeFormatted.ToString();
+        }
+        else
+        {
+            MainMenuManager.Instance.GameOver();
+        }
+    }
+
     private void SetupGame()
     {
         cardMatrixArray = new Card[rowCount, columnCount];
@@ -127,14 +153,15 @@ public class GamePlayManager : MonoBehaviour
     {
         if (previouslySelectedCard != null)
         {
-            Debug.Log("111111111111111 GamePlay");
             currentlySelectedCard = cardDetail;
             if (currentlySelectedCard.spriteIndex == previouslySelectedCard.spriteIndex)
             {
-                Debug.Log("22222222222 GamePlay");
                 previouslySelectedCard.GetComponent<Image>().enabled = false;
                 currentlySelectedCard.GetComponent<Image>().enabled = false;
                 totalMatchCount -= 2;
+                currentScore += (standardScore * comboMultiplier);
+                scoreText.text = currentScore.ToString();
+                comboMultiplier += 1;
                 if (totalMatchCount > 0)
                 {
                     Debug.Log("continue GamePlay");
@@ -143,27 +170,19 @@ public class GamePlayManager : MonoBehaviour
                 {
                     Debug.Log("GameOver Screen ");
                     MainMenuManager.Instance.GameOver();
-                    
                 }
-               
-
             }
             else
             {
-                Debug.Log("not currentlySelectedCard", currentlySelectedCard.gameObject);
-                Debug.Log("not previouslySelectedCard", previouslySelectedCard.gameObject);
-
+                comboMultiplier = 1;
                 currentlySelectedCard.CardFlipBack();
                 previouslySelectedCard.CardFlipBack();
-              
-
             }
             currentlySelectedCard = null;
             previouslySelectedCard = null;
         }
         else
         {
-            Debug.Log("previous GamePlay");
             previouslySelectedCard = cardDetail;
         }
     }
