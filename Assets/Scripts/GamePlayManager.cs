@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-public class GamePlayManager : MonoBehaviour
+public class GamePlayManager : MonoBehaviour,IGameState
 {
     public static GamePlayManager instance;
     public GameObject cardPrefab;
@@ -24,8 +25,9 @@ public class GamePlayManager : MonoBehaviour
     public int columnCount = 2;
     public int totalCount;
     public int totalMatchCount;
+    public bool isLoaded;
 
-   [SerializeField] private Card[,] cardMatrixArray;
+    [SerializeField] private Card[,] cardMatrixArray;
     public List<CardData> cardDatas;
 
     private void Awake()
@@ -35,16 +37,20 @@ public class GamePlayManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-       
+
     }
     private void OnEnable()
     {
-        //ResetData();
-        totalCount = rowCount * columnCount;
-        totalMatchCount = totalCount;
+        if (!isLoaded)
+        {
+            totalCount = rowCount * columnCount;
+            totalMatchCount = totalCount;
+            SetupGame();
+        }
+        // Add Load Logic
 
-        SetupGame();
     }
+
     private void Update()
     {
         if (totalTime > 0)
@@ -78,7 +84,7 @@ public class GamePlayManager : MonoBehaviour
         GenerateCards(rowCount, columnCount, card =>
         {
             cardDatas.Add(new CardData(card.cardDatas.item1, card.cardDatas.item2));
-            card.isVisible = true;
+            card.isHidden = false;
 
         });
     }
@@ -164,6 +170,9 @@ public class GamePlayManager : MonoBehaviour
                 //AudioPlayer.Instance.PlayAudio(2);
                 previouslySelectedCard.GetComponent<Image>().enabled = false;
                 currentlySelectedCard.GetComponent<Image>().enabled = false;
+                previouslySelectedCard.isHidden = true;
+                currentlySelectedCard.isHidden = true;
+
                 totalMatchCount -= 2;
                 currentScore += (standardScore * comboMultiplier);
                 scoreText.text = currentScore.ToString();
@@ -171,7 +180,7 @@ public class GamePlayManager : MonoBehaviour
                 if (totalMatchCount > 0)
                 {
                     Debug.Log("continue GamePlay");
-                    
+
                 }
                 else
                 {
@@ -207,12 +216,12 @@ public class GamePlayManager : MonoBehaviour
                 {
 
                     Destroy(cardMatrixArray[i, j].gameObject);
-                   
+
                 }
             }
         }
         cardMatrixArray = null;
-        
+
 
 
     }
@@ -226,6 +235,106 @@ public class GamePlayManager : MonoBehaviour
         timerText.text = "00:00";
         scoreText.text = "0";
     }
+    public void ResetGameState()
+    {
+        ResetData();
+        ResetGameplayUi();
+    }
+    public void SaveGameState()
+    {
+        if (cardMatrixArray == null) return;
+        List<CardState> cardStateList = new List<CardState>();
+        for (int i = 0; i < rowCount; i++)
+        {
+            for (int j = 0; j < columnCount; j++)
+            {
+                Card card = cardMatrixArray[i, j];
+                CardState cardState = new CardState(i, j, card.spriteIndex, card.isHidden);
+                cardStateList.Add(cardState);
+            }
+        }
+
+        SaveData saveData = new SaveData(rowCount,
+                                         columnCount,
+                                         currentScore,
+                                         totalMatchCount,
+                                         totalTime,
+                                         comboMultiplier,
+                                         cardStateList,
+                                         (int)cardGrid.cellSize.x,
+                                         cardGrid.constraint,
+                                         cardGrid.constraintCount);
+
+        // Convert the data to JSON
+        string json = JsonUtility.ToJson(saveData);
+
+        // Save the JSON string to a file
+        string path = Application.persistentDataPath + "/savefile.json";
+        File.WriteAllText(path, json);
+
+        Debug.Log("Game Data Saved: " + path);
+    }
+    public void LoadGameState()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+
+       
+        if (File.Exists(path))
+        {
+
+            string json = File.ReadAllText(path);
+            SaveData loadedData = JsonUtility.FromJson<SaveData>(json);
+            ResetData();
+            ResetGameplayUi();
+
+            rowCount = loadedData.rowCount;
+            columnCount = loadedData.columnCount;
+            totalCount = rowCount * columnCount;
+            currentScore = loadedData.score;
+            totalMatchCount = loadedData.totalMatchCount;
+            totalTime = loadedData.totalTime;
+            comboMultiplier = loadedData.comboMultiplier;
+
+
+
+            cardMatrixArray = new Card[rowCount, columnCount];
+            GenerateCards(rowCount, columnCount, card => { });
+
+            foreach (var cardState in loadedData.cardStateList)
+            {
+                Card card = cardMatrixArray[cardState.x, cardState.y];
+
+
+                card.spriteIndex = cardState.spriteIndex;
+
+
+                card.cardFrontGraphics = CardGraphics[cardState.spriteIndex];
+
+
+                if (cardState.isHidden)
+                {
+                    card.GetComponent<Image>().enabled = false;
+                    card.isHidden = true;
+                }
+                else
+                {
+                    card.GetComponent<Image>().enabled = true;
+                    card.isHidden = false;
+                }
+            }
+            ConfigureGrid();
+
+            scoreText.text = currentScore.ToString();
+            timerText.text = string.Format("{0:D2}:{1:D2}", Mathf.FloorToInt(totalTime / 60), Mathf.FloorToInt(totalTime % 60));
+
+            Debug.Log("Game Data Loaded");
+        }
+        else
+        {
+            Debug.Log("No save file found.");
+        }
+    }
+
 }
 
 [Serializable]

@@ -1,23 +1,24 @@
+using DG.Tweening;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using DG.Tweening;
-using UnityEngine.UI;
+
 public class MainMenuManager : MonoBehaviour
 {
 
     public static MainMenuManager Instance;
     public GamePlayManager gameplayManager;
+    public SaveLoadManager saveLoadManager;
 
     public Transform StartScreen;
- //   public Transform LevelSelectionScreen;
+    
     public Transform LevelSelectionScreen;
     public Transform GamePanel;
     public Transform GameOverScreen;
     public TextMeshProUGUI finalScore;
 
-    
-   
+    public Transform LoadButton;
+
 
     public TMP_Dropdown rowDropDown;
     public TMP_Dropdown columnDropDown;
@@ -29,16 +30,19 @@ public class MainMenuManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-       StartScreen.transform.GetChild(0).DOScale(1.2f, 0.5f).SetEase(Ease.InOutBack).SetLoops(-1, LoopType.Yoyo);
-       StartScreen.transform.GetChild(1).GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 200), 1f).SetEase(Ease.InBack);
-    }
-   
+        StartScreen.transform.GetChild(0).DOScale(1.2f, 0.5f).SetEase(Ease.InOutBack).SetLoops(-1, LoopType.Yoyo);
+        StartScreen.transform.GetChild(1).GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 200), 1f).SetEase(Ease.InBack);
 
-   
+        if (saveLoadManager.CheckForJson())
+            LoadButton.gameObject.SetActive(true);
+        else
+            LoadButton.gameObject.SetActive(false);
+
+    }
 
     public void OnStartScreenStartButtonClick()
     {
-        
+
         LevelSelectionScreen.gameObject.SetActive(true);
         StartScreen.gameObject.SetActive(false);
         InitializeRowOptions();
@@ -51,7 +55,7 @@ public class MainMenuManager : MonoBehaviour
         {
             rowDropDown.options.Add(new TMP_Dropdown.OptionData(i.ToString()));
         }
-        
+
         columnDropDown.options.Clear();
         columnDropDown.options.Add(new TMP_Dropdown.OptionData("1"));
         columnDropDown.interactable = false;
@@ -90,17 +94,25 @@ public class MainMenuManager : MonoBehaviour
         LevelSelectionScreen.gameObject.SetActive(false);
         GamePanel.gameObject.SetActive(true);
         gameplayManager.enabled = true;
+    }
 
-
-
-        
+    public void LoadGameButtonClick()
+    {
+        gameplayManager.isLoaded = true;
+        gameplayManager.LoadGameState();
+        GamePanel.gameObject.SetActive(true);
+        gameplayManager.enabled = true;
+        StartScreen.gameObject.SetActive(false);
     }
 
     public void GameOver()
     {
+
         GamePanel.gameObject.SetActive(false);
         GameOverScreen.gameObject.SetActive(true);
         finalScore.text = gameplayManager.scoreText.text;
+        saveLoadManager.DeleteJson();
+
     }
 
     public void GameOverMenuButtonClick()
@@ -110,6 +122,11 @@ public class MainMenuManager : MonoBehaviour
         gameplayManager.enabled = false;
         gameplayManager.ResetGameplayUi();
         gameplayManager.ResetData();
+        if (saveLoadManager.CheckForJson())
+            LoadButton.gameObject.SetActive(true);
+        else
+            LoadButton.gameObject.SetActive(false);
+
 
     }
 }

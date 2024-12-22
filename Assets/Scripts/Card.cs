@@ -9,7 +9,7 @@ public class Card : MonoBehaviour
     public Sprite cardFrontGraphics;
     public Sprite cardBackGraphics;
     public CardData cardDatas;
-    public bool isVisible;
+    public bool isHidden;
     private Image image;
 
     bool isFlipped;
@@ -21,7 +21,7 @@ public class Card : MonoBehaviour
     }
     public void CardFlip()
     {
-        Debug.Log("cardFlip Triggered");
+        //Debug.Log("cardFlip Triggered");
         this.transform.DORotate(new Vector3(0, 90, 0), 0.3f, RotateMode.Fast).OnComplete(() =>
         {
 
@@ -39,7 +39,7 @@ public class Card : MonoBehaviour
     }
     public void CardFlipBack()
     {
-        Debug.Log("CardFlipBack Triggered");
+        //Debug.Log("CardFlipBack Triggered");
         this.transform.DORotate(new Vector3(0, 90, 0), 0.3f, RotateMode.Fast).OnComplete(() =>
         {
 
