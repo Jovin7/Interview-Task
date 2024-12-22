@@ -40,14 +40,14 @@ public class MainMenuManager : MonoBehaviour
         StartScreen.transform.GetChild(0).DOScale(1.2f, 0.5f).SetEase(Ease.InOutBack).SetLoops(-1, LoopType.Yoyo);
         StartScreen.transform.GetChild(1).GetComponent<RectTransform>().DOAnchorPos(new Vector2(0, 200), 1f).SetEase(Ease.InBack);
 
-        if (saveLoadManager.CheckForJson())
+        if (saveLoadManager.CheckForSaveFile())
         {
-            Debug.Log("JSON Found");
+           // Debug.Log("JSON Found");
             LoadButton.gameObject.SetActive(true);
         }
         else
         {
-            Debug.Log("JSON not Found");
+           // Debug.Log("JSON not Found");
             LoadButton.gameObject.SetActive(false);
         }
     }
@@ -82,7 +82,7 @@ public class MainMenuManager : MonoBehaviour
     }
     private void InitializeRowOptions()
     {
-        Debug.LogError("InitializeRowOptions");
+       // Debug.LogError("InitializeRowOptions");
         rowDropDown.options.Clear();
         for (int i = 1; i <= gameplayManager.CardGraphics.Count; i++)
         {
@@ -98,7 +98,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void OnRowDropDown()
     {
-        Debug.Log("OnRowDropDown");
+       // Debug.Log("OnRowDropDown");
         gameplayManager.rowCount = rowDropDown.value + 1;
         columnDropDown.options.Clear();
         columnDropDown.interactable = true;
@@ -173,7 +173,7 @@ public class MainMenuManager : MonoBehaviour
         GameOverScreen.GetComponent<Image>().DOFade(0.8f, 0.5f);
         currentTween = GameOverScreen.GetChild(0).DOScale(1.2f, 0.5f).SetEase(Ease.Linear).SetLoops(-1, LoopType.Yoyo);
         finalScore.text = gameplayManager.scoreText.text;
-        SaveLoadManager.instance.DeleteJson();
+        SaveLoadManager.instance.DeleteSaveFile();
         SaveLoadManager.instance.isGameCompleted = true;
 
     }
@@ -187,7 +187,7 @@ public class MainMenuManager : MonoBehaviour
         gameplayManager.enabled = false;
         gameplayManager.ResetGameplayUi();
         gameplayManager.ResetData();
-        if (saveLoadManager.CheckForJson())
+        if (saveLoadManager.CheckForSaveFile())
             LoadButton.gameObject.SetActive(true);
         else
             LoadButton.gameObject.SetActive(false);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.UI;
@@ -53,9 +54,9 @@ public class SaveLoadManager : MonoBehaviour
 
         return null; // Return null if no object implements IGameState
     }
-    public bool CheckForJson()
+    public bool CheckForSaveFile()
     {
-        string path = Application.persistentDataPath + "/savefile.json";
+        string path = Application.persistentDataPath + "/savefile.dat";
         if (File.Exists(path))
         {
             return true;
@@ -63,9 +64,9 @@ public class SaveLoadManager : MonoBehaviour
         return false;
     }
 
-    public void DeleteJson()
+    public void DeleteSaveFile()
     {
-        string path = Application.persistentDataPath + "/savefile.json";
+        string path = Application.persistentDataPath + "/savefile.dat";
         if (File.Exists(path))
         {
             File.Delete(path);
@@ -106,14 +107,16 @@ public class SaveLoadManager : MonoBehaviour
             gamePlayManager.cardGrid.constraintCount
         );
 
-        // Convert to JSON
-        string json = JsonUtility.ToJson(saveData);
+      
 
-        // Save JSON to a file
-        string path = Application.persistentDataPath + "/savefile.json";
-        File.WriteAllText(path, json);
+        string path = Application.persistentDataPath + "/savefile.dat";
+        BinaryFormatter bf = new BinaryFormatter();
+        using (FileStream file = File.Create(path))
+        {
+            bf.Serialize(file, saveData);
+        }
 
-        Debug.Log("Game Data Saved: " + path);
+        //Debug.Log("Game Data Saved: " + path);
     }
 
     // Load the game state from a file
@@ -126,56 +129,59 @@ public class SaveLoadManager : MonoBehaviour
         }
 
         GamePlayManager gamePlayManager = gameState as GamePlayManager;
-        string path = Application.persistentDataPath + "/savefile.json";
+        string path = Application.persistentDataPath + "/savefile.dat";
 
         if (File.Exists(path))
         {
-            string json = File.ReadAllText(path);
-            SaveData loadedData = JsonUtility.FromJson<SaveData>(json);
-
-            // Reset current game state
-            gamePlayManager.ResetData();
-            gamePlayManager.ResetGameplayUi();
-
-            // Update the game state with loaded data
-            gamePlayManager.rowCount = loadedData.rowCount;
-            gamePlayManager.columnCount = loadedData.columnCount;
-            gamePlayManager.totalCount = gamePlayManager.rowCount * gamePlayManager.columnCount;
-            gamePlayManager.currentScore = loadedData.score;
-            gamePlayManager.totalMatchCount = loadedData.totalMatchCount;
-            gamePlayManager.totalTime = loadedData.totalTime;
-            gamePlayManager.comboMultiplier = loadedData.comboMultiplier;
-
-            // Generate the game grid again
-            gamePlayManager.cardMatrixArray = new Card[gamePlayManager.rowCount, gamePlayManager.columnCount];
-            gamePlayManager.GenerateCards(gamePlayManager.rowCount, gamePlayManager.columnCount, card => { });
-
-            // Load card states
-            foreach (var cardState in loadedData.cardStateList)
+            BinaryFormatter bf = new BinaryFormatter();
+            using (FileStream file = File.Open(path, FileMode.Open))
             {
-                Card card = gamePlayManager.cardMatrixArray[cardState.x, cardState.y];
+                SaveData loadedData =(SaveData) bf.Deserialize(file);
 
-                card.spriteIndex = cardState.spriteIndex;
-                card.cardFrontGraphics = gamePlayManager.CardGraphics[cardState.spriteIndex];
+                // Reset current game state
+                gamePlayManager.ResetData();
+                gamePlayManager.ResetGameplayUi();
 
-                if (cardState.isHidden)
+                // Update the game state with loaded data
+                gamePlayManager.rowCount = loadedData.rowCount;
+                gamePlayManager.columnCount = loadedData.columnCount;
+                gamePlayManager.totalCount = gamePlayManager.rowCount * gamePlayManager.columnCount;
+                gamePlayManager.currentScore = loadedData.score;
+                gamePlayManager.totalMatchCount = loadedData.totalMatchCount;
+                gamePlayManager.totalTime = loadedData.totalTime;
+                gamePlayManager.comboMultiplier = loadedData.comboMultiplier;
+
+                // Generate the game grid again
+                gamePlayManager.cardMatrixArray = new Card[gamePlayManager.rowCount, gamePlayManager.columnCount];
+                gamePlayManager.GenerateCards(gamePlayManager.rowCount, gamePlayManager.columnCount, card => { });
+
+                // Load card states
+                foreach (var cardState in loadedData.cardStateList)
                 {
-                    card.GetComponent<Image>().enabled = false;
-                    card.isHidden = true;
+                    Card card = gamePlayManager.cardMatrixArray[cardState.x, cardState.y];
+
+                    card.spriteIndex = cardState.spriteIndex;
+                    card.cardFrontGraphics = gamePlayManager.CardGraphics[cardState.spriteIndex];
+
+                    if (cardState.isHidden)
+                    {
+                        card.GetComponent<Image>().enabled = false;
+                        card.isHidden = true;
+                    }
+                    else
+                    {
+                        card.GetComponent<Image>().enabled = true;
+                        card.isHidden = false;
+                    }
                 }
-                else
-                {
-                    card.GetComponent<Image>().enabled = true;
-                    card.isHidden = false;
-                }
+
+                // Reconfigure grid and UI
+                gamePlayManager.ConfigureGrid();
+                gamePlayManager.scoreText.text = gamePlayManager.currentScore.ToString();
+                gamePlayManager.timerText.text = string.Format("{0:D2}:{1:D2}", Mathf.FloorToInt(gamePlayManager.totalTime / 60), Mathf.FloorToInt(gamePlayManager.totalTime % 60));
+
+                Debug.Log("Game Data Loaded");
             }
-
-            // Reconfigure grid and UI
-            gamePlayManager.ConfigureGrid();
-            gamePlayManager.scoreText.text = gamePlayManager.currentScore.ToString();
-            gamePlayManager.timerText.text = string.Format("{0:D2}:{1:D2}", Mathf.FloorToInt(gamePlayManager.totalTime / 60), Mathf.FloorToInt(gamePlayManager.totalTime % 60));
-
-            Debug.Log("Game Data Loaded");
         }
         else
         {

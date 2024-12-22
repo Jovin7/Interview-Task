@@ -180,12 +180,12 @@ public class GamePlayManager : MonoBehaviour,IGameState
                 comboMultiplier += 1;
                 if (totalMatchCount > 0)
                 {
-                    Debug.Log("continue GamePlay");
+                  //  Debug.Log("continue GamePlay");
 
                 }
                 else
                 {
-                    Debug.Log("GameOver Screen ");
+                  //  Debug.Log("GameOver Screen ");
                     
                     MainMenuManager.Instance.GameOver();
                 }
@@ -208,7 +208,7 @@ public class GamePlayManager : MonoBehaviour,IGameState
 
     public void ResetData()
     {
-        Debug.LogError("Reset");
+       // Debug.LogError("Reset");
         cardDatas = null;
         if (cardMatrixArray != null)
         {
