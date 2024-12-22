@@ -13,6 +13,7 @@ public class AudioPlayer : MonoBehaviour
 
     private static float vol = 1;
 
+    
     void Awake()
     {
         Instance = this;

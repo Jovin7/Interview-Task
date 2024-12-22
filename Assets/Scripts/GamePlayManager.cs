@@ -11,12 +11,12 @@ public class GamePlayManager : MonoBehaviour,IGameState
     public GridLayoutGroup cardGrid;
     public RectTransform cardGridRect;
 
-    private float totalTime = 120f;
+    public float totalTime = 120f;
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI scoreText;
-    private int standardScore = 10;
-    private int comboMultiplier = 1;
-    private int currentScore = 0;
+    public int standardScore = 10;
+    public int comboMultiplier = 1;
+    public int currentScore = 0;
 
     public List<Sprite> CardGraphics = new List<Sprite>();
     public Card previouslySelectedCard;
@@ -27,7 +27,7 @@ public class GamePlayManager : MonoBehaviour,IGameState
     public int totalMatchCount;
     public bool isLoaded;
 
-    [SerializeField] private Card[,] cardMatrixArray;
+    public  Card[,] cardMatrixArray;
     public List<CardData> cardDatas;
 
     private void Awake()
@@ -88,7 +88,7 @@ public class GamePlayManager : MonoBehaviour,IGameState
 
         });
     }
-    private void GenerateCards(int rowCount, int columnCount, Action<Card> fetchingCardData)
+    public void GenerateCards(int rowCount, int columnCount, Action<Card> fetchingCardData)
     {
         for (int i = 0; i < rowCount; i++)
         {
@@ -132,7 +132,7 @@ public class GamePlayManager : MonoBehaviour,IGameState
             spriteIndex++;
         }
     }
-    private void ConfigureGrid()
+    public void ConfigureGrid()
     {
         // Calculate available space after padding and spacing
         float availableWidth = cardGridRect.rect.width - cardGrid.padding.horizontal - (columnCount - 1) * cardGrid.spacing.x;
@@ -168,6 +168,7 @@ public class GamePlayManager : MonoBehaviour,IGameState
             if (currentlySelectedCard.spriteIndex == previouslySelectedCard.spriteIndex)
             {
                 //AudioPlayer.Instance.PlayAudio(2);
+                AudioPlayer.Instance.PlayAudio(1);
                 previouslySelectedCard.GetComponent<Image>().enabled = false;
                 currentlySelectedCard.GetComponent<Image>().enabled = false;
                 previouslySelectedCard.isHidden = true;
@@ -185,6 +186,7 @@ public class GamePlayManager : MonoBehaviour,IGameState
                 else
                 {
                     Debug.Log("GameOver Screen ");
+                    
                     MainMenuManager.Instance.GameOver();
                 }
             }
@@ -242,98 +244,14 @@ public class GamePlayManager : MonoBehaviour,IGameState
     }
     public void SaveGameState()
     {
-        if (cardMatrixArray == null) return;
-        List<CardState> cardStateList = new List<CardState>();
-        for (int i = 0; i < rowCount; i++)
-        {
-            for (int j = 0; j < columnCount; j++)
-            {
-                Card card = cardMatrixArray[i, j];
-                CardState cardState = new CardState(i, j, card.spriteIndex, card.isHidden);
-                cardStateList.Add(cardState);
-            }
-        }
-
-        SaveData saveData = new SaveData(rowCount,
-                                         columnCount,
-                                         currentScore,
-                                         totalMatchCount,
-                                         totalTime,
-                                         comboMultiplier,
-                                         cardStateList,
-                                         (int)cardGrid.cellSize.x,
-                                         cardGrid.constraint,
-                                         cardGrid.constraintCount);
-
-        // Convert the data to JSON
-        string json = JsonUtility.ToJson(saveData);
-
-        // Save the JSON string to a file
-        string path = Application.persistentDataPath + "/savefile.json";
-        File.WriteAllText(path, json);
-
-        Debug.Log("Game Data Saved: " + path);
+        SaveLoadManager.instance.SaveGame();
+       
     }
     public void LoadGameState()
     {
-        string path = Application.persistentDataPath + "/savefile.json";
-
-       
-        if (File.Exists(path))
-        {
-
-            string json = File.ReadAllText(path);
-            SaveData loadedData = JsonUtility.FromJson<SaveData>(json);
-            ResetData();
-            ResetGameplayUi();
-
-            rowCount = loadedData.rowCount;
-            columnCount = loadedData.columnCount;
-            totalCount = rowCount * columnCount;
-            currentScore = loadedData.score;
-            totalMatchCount = loadedData.totalMatchCount;
-            totalTime = loadedData.totalTime;
-            comboMultiplier = loadedData.comboMultiplier;
-
-
-
-            cardMatrixArray = new Card[rowCount, columnCount];
-            GenerateCards(rowCount, columnCount, card => { });
-
-            foreach (var cardState in loadedData.cardStateList)
-            {
-                Card card = cardMatrixArray[cardState.x, cardState.y];
-
-
-                card.spriteIndex = cardState.spriteIndex;
-
-
-                card.cardFrontGraphics = CardGraphics[cardState.spriteIndex];
-
-
-                if (cardState.isHidden)
-                {
-                    card.GetComponent<Image>().enabled = false;
-                    card.isHidden = true;
-                }
-                else
-                {
-                    card.GetComponent<Image>().enabled = true;
-                    card.isHidden = false;
-                }
-            }
-            ConfigureGrid();
-
-            scoreText.text = currentScore.ToString();
-            timerText.text = string.Format("{0:D2}:{1:D2}", Mathf.FloorToInt(totalTime / 60), Mathf.FloorToInt(totalTime % 60));
-
-            Debug.Log("Game Data Loaded");
-        }
-        else
-        {
-            Debug.Log("No save file found.");
-        }
+        SaveLoadManager.instance.LoadGame();
     }
+       
 
 }
 
